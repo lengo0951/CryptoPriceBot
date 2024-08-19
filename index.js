@@ -8,7 +8,7 @@ require('dotenv').config();
 
 //create bot by Telegraf library
 const { Telegraf} = require('telegraf');
-const bot = new Telegraf(proces.env.BOT_TOKEN);
+const bot = new Telegraf(process.env.BOT_TOKEN);
 
 //cau hinh webhook
 const webhookPath = '/webhook';
