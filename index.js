@@ -6,11 +6,11 @@ const axios = require('axios');
 require('dotenv').config();
 
 //create bot by Telegraf library
-const BOT_TOKEN = '7403189572:AAFyeVv0p6c1IaiW1Pb1c0qIYefa-lRe5tE';
 const { Telegraf} = require('telegraf');
 const bot = new Telegraf(process.env.BOT_TOKEN);
 
 app.use(bot.webhookCallback('/7403189572:AAFyeVv0p6c1IaiW1Pb1c0qIYefa-lRe5tE'));
+bot.telegram.setWebhook('https://cryptopricebot.onrender.com/7403189572:AAFyeVv0p6c1IaiW1Pb1c0qIYefa-lRe5tE');
 
 app.get("/", (req, res) => {
     res.sendFile(path.join(__dirname + '/index.html'));
