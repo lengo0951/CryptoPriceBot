@@ -7,15 +7,21 @@ require('dotenv').config();
 
 //create bot by Telegraf library
 const { Telegraf} = require('telegraf');
-const bot = new Telegraf(process.env.BOT_TOKEN);
+const bot = new Telegraf(proces.env.BOT_TOKEN);
 
-app.use(bot.webhookCallback('/7403189572:AAFyeVv0p6c1IaiW1Pb1c0qIYefa-lRe5tE'));
-//bot.telegram.setWebhook('https://cryptopricebot.onrender.com/7403189572:AAFyeVv0p6c1IaiW1Pb1c0qIYefa-lRe5tE');
+//cau hinh webhook
+const webhookPath = '/webhook';
+app.use(bot.webhookCallback(webhookPath));
+
+// Thiết lập webhook
+bot.telegram.setWebhook(`${process.env.APP_URL}${webhookPath}`)
+  .then(() => console.log('Webhook đã được thiết lập thành công'))
+  .catch(err => console.error('Lỗi khi thiết lập webhook:', err));
 
 app.get("/", (req, res) => {
     res.sendFile(path.join(__dirname + '/index.html'));
 });
-//bot.launch()
+
 bot.command('start', ctx => {
     console.log(ctx.from);
     bot.telegram.sendMessage(ctx.chat.id, 'Hello there! Welcome to CoolStar Bot', {});
