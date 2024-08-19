@@ -31,7 +31,7 @@ bot.command('bitcoin', ctx => {
     console.log(ctx.from);
     axios.get('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin&vs_currencies=usd')
     .then(response => {
-        console.log(response.data);
+        //console.log(response.data);
         if (response.data.bitcoin && response.data.bitcoin.usd) {
             const rate = response.data.bitcoin;
             const message = `Hello, today the Bitcoin price is ${rate.usd} USD`;
@@ -46,4 +46,4 @@ bot.command('bitcoin', ctx => {
     });
 });
 
-app.listen(port, () => console.log(`Listening on ${port}`))
+app.listen(process.env.PORT || 3000, () => console.log('Server is running'));
