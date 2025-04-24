@@ -64,13 +64,19 @@ bot.command('quit', async (ctx) => {
 bot.command('BTCUSDT', async (ctx) => {
     log(ctx.from);
     try {
-        const response = await axios.get('https://api.binance.com/api/v3/ticker/price', {
+        const response = await axios.get('https://api.binance.com/api/v3/ticker/24hr', {
             params: {
                 symbol: 'BTCUSDT'
             }
         });
-        const btcPrice = parseFloat(response.data.price).toFixed(4);
-        ctx.reply(`💰 Giá Bitcoin hiện tại là ${btcPrice} USD\n\n📊 Biến động 24h: ${response.data.priceChangePercent}%\n\n📈 Cao nhất 24h: ${response.data.highPrice} USD\n📉 Thấp nhất 24h: ${response.data.lowPrice} USD`);
+        const data = response.data;
+        const price = parseFloat(data.lastPrice).toFixed(4);
+        const priceChangePercent = parseFloat(data.priceChangePercent).toFixed(2);
+        const highPrice = parseFloat(data.highPrice).toFixed(4);
+        const lowPrice = parseFloat(data.lowPrice).toFixed(4);
+        const volume = parseFloat(data.volume).toFixed(2);
+
+        ctx.reply(`💰 Giá Bitcoin hiện tại là ${price} USD\n\n📊 Biến động 24h: ${priceChangePercent}%\n\n📈 Cao nhất 24h: ${highPrice} USD\n📉 Thấp nhất 24h: ${lowPrice} USD\n\n💹 Khối lượng giao dịch 24h: ${volume} BTC`);
     } catch (error) {
         console.error('Error calling API:', error);
         ctx.reply('Xin lỗi, tôi không thể lấy giá Bitcoin lúc này. Vui lòng thử lại sau.');
@@ -147,14 +153,20 @@ bot.command('price', async (ctx) => {
         }
 
         const symbol = args[1].toUpperCase();
-        const response = await axios.get('https://api.binance.com/api/v3/ticker/price', {
+        const response = await axios.get('https://api.binance.com/api/v3/ticker/24hr', {
             params: {
                 symbol: symbol
             }
         });
 
-        const price = parseFloat(response.data.price).toFixed(4);
-        ctx.reply(`💰 Giá ${symbol} hiện tại là ${price} USD\n\n📊 Biến động 24h: ${response.data.priceChangePercent}%\n\n📈 Cao nhất 24h: ${response.data.highPrice} USD\n📉 Thấp nhất 24h: ${response.data.lowPrice} USD`);
+        const data = response.data;
+        const price = parseFloat(data.lastPrice).toFixed(4);
+        const priceChangePercent = parseFloat(data.priceChangePercent).toFixed(2);
+        const highPrice = parseFloat(data.highPrice).toFixed(4);
+        const lowPrice = parseFloat(data.lowPrice).toFixed(4);
+        const volume = parseFloat(data.volume).toFixed(2);
+
+        ctx.reply(`💰 Giá ${symbol} hiện tại là ${price} USD\n\n📊 Biến động 24h: ${priceChangePercent}%\n\n📈 Cao nhất 24h: ${highPrice} USD\n📉 Thấp nhất 24h: ${lowPrice} USD\n\n💹 Khối lượng giao dịch 24h: ${volume} ${symbol.replace('USDT', '')}`);
     } catch (error) {
         console.error('Error calling API:', error);
         if (error.response && error.response.status === 400) {
@@ -198,6 +210,7 @@ bot.command('chart', async (ctx) => {
 // Thiết lập các lệnh cho bot
 const commands = [
     { command: 'start', description: 'Bắt đầu sử dụng bot' },
+    { command: 'help', description: 'Xem hướng dẫn sử dụng' },
     { command: 'price', description: 'Tra cứu giá tiền điện tử (ví dụ: /price BTCUSDT)' },
     { command: 'chart', description: 'Xem giá theo khung thời gian (ví dụ: /chart BTCUSDT 4h)' },
     { command: 'sma', description: 'Xem chỉ báo SMA 100 của Bitcoin' },
@@ -208,6 +221,55 @@ const commands = [
 bot.telegram.setMyCommands(commands)
     .then(() => console.log('Đã cập nhật danh sách lệnh thành công'))
     .catch(err => console.error('Lỗi khi cập nhật danh sách lệnh:', err));
+
+// Thêm lệnh help để hiển thị hướng dẫn sử dụng
+bot.command('help', (ctx) => {
+    const helpMessage = `📚 Hướng dẫn sử dụng Crypto Trading Bot 📚
+
+👋 Lệnh cơ bản:
+/start - Bắt đầu sử dụng bot
+/help - Xem hướng dẫn sử dụng
+/quit - Tạm biệt bot
+
+💰 Tra cứu giá:
+/price [mã] - Xem giá hiện tại của tiền điện tử
+Ví dụ: /price BTCUSDT, /price ETHUSDT
+
+📊 Xem biểu đồ:
+/chart [mã] [khung] - Xem giá theo khung thời gian
+Ví dụ: /chart BTCUSDT 4h, /chart ETHUSDT 1d
+
+📈 Chỉ báo kỹ thuật:
+/sma - Xem chỉ báo SMA 100 của Bitcoin
+
+📌 Danh sách mã tiền điện tử phổ biến:
+- BTCUSDT: Bitcoin
+- ETHUSDT: Ethereum
+- BNBUSDT: Binance Coin
+- SOLUSDT: Solana
+- XRPUSDT: Ripple
+- ADAUSDT: Cardano
+- DOTUSDT: Polkadot
+- DOGEUSDT: Dogecoin
+
+⏰ Các khung thời gian có sẵn:
+- 1m: 1 phút
+- 5m: 5 phút
+- 15m: 15 phút
+- 1h: 1 giờ
+- 4h: 4 giờ
+- 1d: 1 ngày
+- 1w: 1 tuần
+
+💡 Lưu ý:
+- Tất cả thông tin chỉ mang tính chất tham khảo
+- Không phải lời khuyên đầu tư
+- Giá có thể thay đổi theo thời gian thực
+
+Chúc bạn giao dịch thành công! 🚀`;
+
+    ctx.reply(helpMessage);
+});
 
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
