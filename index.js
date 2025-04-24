@@ -14,20 +14,27 @@ require('dotenv').config();
 const { Telegraf } = require('telegraf');
 const bot = new Telegraf(process.env.BOT_TOKEN);
 
-//for deploy turn on codes below
+// Cấu hình webhook
 const webhookPath = '/webhook';
+const appUrl = process.env.APP_URL || 'https://cryptopricenotifierbot.onrender.com';
+
+console.log('Setting up webhook with URL:', `${appUrl}${webhookPath}`);
+
 app.use(bot.webhookCallback(webhookPath));
-// Thiết lập webhook
-bot.telegram.setWebhook(`${process.env.APP_URL}${webhookPath}`)
+bot.telegram.setWebhook(`${appUrl}${webhookPath}`)
     .then(() => console.log('Webhook đã được thiết lập thành công'))
     .catch(err => console.error('Lỗi khi thiết lập webhook:', err));
-//local turn on line below
-// bot.launch();
+
 app.get("/", (req, res) => {
     res.sendFile(path.join(__dirname + '/index.html'));
 });
+
 //start bot
-bot.start((ctx) => ctx.reply('Hello there! Welcome to CoolStar Bot'))
+bot.start((ctx) => {
+    console.log('Received start command from user:', ctx.from.id);
+    ctx.reply('Xin chào! Tôi là Crypto Trading Bot. Tôi có thể giúp bạn theo dõi giá crypto và các chỉ báo kỹ thuật.');
+});
+
 bot.command('quit', async (ctx) => {
     // Explicit usage
     await ctx.telegram.leaveChat(ctx.message.chat.id)
@@ -95,4 +102,18 @@ app.get('/:symbol/:interval', async (req, res) => {
         res.status(500).send(err);
     }
 });
-app.listen(process.env.PORT || 5000, () => console.log('Server is running'));
+
+// Thêm endpoint để kiểm tra webhook
+app.get('/webhook-info', async (req, res) => {
+    try {
+        const webhookInfo = await bot.telegram.getWebhookInfo();
+        res.json(webhookInfo);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+app.listen(port, () => {
+    console.log(`Server is running on port ${port}`);
+    console.log(`Webhook URL: ${appUrl}${webhookPath}`);
+});
