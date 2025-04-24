@@ -18,13 +18,28 @@ const bot = new Telegraf(process.env.BOT_TOKEN);
 const webhookPath = '/webhook';
 const appUrl = process.env.APP_URL || 'https://cryptopricenotifierbot.onrender.com';
 
+// Thêm middleware để xử lý JSON
+app.use(express.json());
+
+console.log('Environment:', process.env.NODE_ENV);
 console.log('Setting up webhook with URL:', `${appUrl}${webhookPath}`);
 
-app.use(bot.webhookCallback(webhookPath));
-bot.telegram.setWebhook(`${appUrl}${webhookPath}`)
-    .then(() => console.log('Webhook đã được thiết lập thành công'))
-    .catch(err => console.error('Lỗi khi thiết lập webhook:', err));
+// Cấu hình cho môi trường production
+if (process.env.NODE_ENV === 'production') {
+    // Cấu hình webhook cho production
+    app.use(bot.webhookCallback(webhookPath));
 
+    // Thiết lập webhook
+    bot.telegram.setWebhook(`${appUrl}${webhookPath}`)
+        .then(() => console.log('Webhook đã được thiết lập thành công'))
+        .catch(err => console.error('Lỗi khi thiết lập webhook:', err));
+} else {
+    // Chạy bot ở chế độ polling cho development
+    bot.launch();
+    console.log('Bot đang chạy ở chế độ polling');
+}
+
+// Route chính
 app.get("/", (req, res) => {
     res.sendFile(path.join(__dirname + '/index.html'));
 });
@@ -108,6 +123,16 @@ app.get('/webhook-info', async (req, res) => {
     try {
         const webhookInfo = await bot.telegram.getWebhookInfo();
         res.json(webhookInfo);
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    }
+});
+
+// Thêm endpoint để xóa webhook
+app.get('/delete-webhook', async (req, res) => {
+    try {
+        await bot.telegram.deleteWebhook();
+        res.json({ message: 'Webhook đã được xóa thành công' });
     } catch (error) {
         res.status(500).json({ error: error.message });
     }
